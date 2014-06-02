@@ -215,7 +215,7 @@ def commit(csList, branch):
             # move checkin tag forward to clearcase tag
             print('Updating ' + CI_TAG + ' to ' + CC_TAG)
             tag(CI_TAG, CC_TAG)
-            
+
             #blindly eat this exception because:
             #when this tag doesnt exist, its because we are creating a new repository
             #and if anything fails during that, theres nothing to revert to, so we
@@ -327,7 +327,7 @@ class Changeset(object):
         else:
             os.chmod(toFile, os.stat(toFile).st_mode | stat.S_IWRITE)
         git_exec(['add', '-f', file], errors=False)
-        
+
         maxRetries = 10
         retries = maxRetries
         while not isPristine() and retries > 0:
