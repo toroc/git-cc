@@ -44,7 +44,6 @@ def main(stash=False, dry_run=False, lshistory=False, load=None):
         print(history)
     else:
         cs = parseHistory(history)
-        #cs.sort(cmp= changeSetComp)
         cs = reversed(cs)
         cs = mergeHistory(cs)
         if dry_run:
@@ -52,18 +51,6 @@ def main(stash=False, dry_run=False, lshistory=False, load=None):
         if not len(cs):
             return
         doStash(lambda: doCommit(cs), stash)
-
-def changeSetComp(csl, csr):
-    if(csl.date < csr.date):
-        return -1
-    elif(csl.date > csr.date):
-        return 1
-    elif(csl.version < csr.version):
-        return -1
-    elif(csl.version > csr.version):
-        return 1
-    else:
-        return 0
 
 def checkPristine():
     if not isPristine():
