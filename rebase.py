@@ -32,6 +32,9 @@ def main(stash=False, dry_run=False, lshistory=False, load=None):
     validateCC()
     if not (stash or dry_run or lshistory):
         checkPristine()
+
+    cc_exec(["update"])
+
     since = getSince()
     cache.start()
     if load:
@@ -335,9 +338,6 @@ class Changeset(object):
 
 class Uncataloged(Changeset):
     def add(self, files):
-        cc_dir = join(CC_DIR, self.file)
-        cc_exec(["update", cc_dir])
-
         dir = path(cc_file(self.file, self.version))
         diff = cc_exec(['diff', '-diff_format', '-pred', dir], errors=False)
         def getFile(line):
