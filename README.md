@@ -105,25 +105,25 @@ I don't know if this will cause any major dramas or not.
 
 1. WindowsError: [Error 2] The system cannot find the file specified
 
-You're most likely running gitcc under Windows Cmd. At moment this isn't
-supported. Instead use Git Bash, which is a better console anyway. :-)
+    You're most likely running gitcc under Windows Cmd. At moment this isn't
+    supported. Instead use Git Bash, which is a better console anyway. :-)
 
-If you have both msysgit and Cygwin installed then it may also be
-[this](https://github.com/charleso/git-cc/issues/10) problem.
+    If you have both msysgit and Cygwin installed then it may also be
+    [this](https://github.com/charleso/git-cc/issues/10) problem.
 
 2. cleartool: Error: Not an object in a vob: ".".
 
-The Clearcase directory you've specified in init isn't correct. Please note
-that the directory must be inside a VOB, which might be one of the folders
-inside the view you've specified.
+    The Clearcase directory you've specified in init isn't correct. Please note
+    that the directory must be inside a VOB, which might be one of the folders
+    inside the view you've specified.
 
 3. fatal: ambiguous argument 'clearcase': unknown revision or path not in the working tree.
 
-If this is your first rebase then please ignore this. This is expected.
+    If this is your first rebase then please ignore this. This is expected.
 
 4. pathspec 'master_cc' did not match any file(s) known to git
 
-See Issue [8](https://github.com/charleso/git-cc/issues/8).
+    See Issue [8](https://github.com/charleso/git-cc/issues/8).
 
 ## Behind the scenes
 
