@@ -169,6 +169,6 @@ def areFilesEqualExceptForEOLs(fileA, fileB):
     fileAContents = fileAContents.replace("\r\n", "\n")
 
     fileBContents = open(fileB, "rb").read()
-    fileBContents = fileAContents.replace("\r\n", "\n")
+    fileBContents = fileBContents.replace("\r\n", "\n")
 
     return fileAContents == fileBContents
