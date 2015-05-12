@@ -68,7 +68,7 @@ def decodeString(encoding, encodestr):
     except UnicodeDecodeError as e:
         print >> sys.stderr, encodestr, ":", e
         return encodestr.decode(encoding, "ignore")
-    
+
 def tag(tag, id="HEAD"):
     git_exec(['tag', '-f', tag, id])
 
@@ -155,7 +155,7 @@ def validateCC():
         fail("Clearcase view path '%s' is invalid. Is the view started?" % CC_DIR)
     if not os.path.exists(CC_DIR):
         fail("Cannot find the ClearCase view at '%s'." % CC_DIR)
-        
+
 def path(path, args='-m'):
     if IS_CYGWIN:
         return os.popen('cygpath %s "%s"' %(args, path)).readlines()[0].strip()

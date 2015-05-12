@@ -74,11 +74,11 @@ def getStatuses(id, initial):
                 # ignore, because if two or more files are pointing to the symlink
                 # and they are both changed, then we might lose some changes
                 print('Ignoring ClearCase SymLink')
-                continue    
+                continue
         except:
-            pass        
-        
-        
+            pass
+
+
         # check if file is really a symlink  (git side)
         cmd = ['ls-tree', '-z', id, '--', args[0]]
         if git_exec(cmd).split(' ')[0] == '120000':
@@ -105,7 +105,7 @@ def checkout(stats, comment, initial):
             stat.stage(transaction)
         except:
             transaction.rollback()
-            raise    
+            raise
     for stat in stats:
         print(stat)
         stat.commit(transaction)
@@ -154,8 +154,8 @@ class Transaction(ITransaction):
         ccFilename = join(CC_DIR, file).replace("\\", "/")
         gitFilename = file
         ccid = git_exec(['hash-object', ccFilename])[0:-1]
-        gitid = getBlob(self.base, file)        
-        if ccid != gitid:            
+        gitid = getBlob(self.base, file)
+        if ccid != gitid:
             if not IGNORE_CONFLICTS:
                 if not areFilesEqualExceptForEOLs(ccFilename, gitFilename):
                     raise Exception('File has been modified: %s. Try rebasing.' % file)

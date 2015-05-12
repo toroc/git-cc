@@ -38,10 +38,10 @@ def copy(file):
 def syncCache():
     cache1 = Cache(GIT_DIR)
     cache1.start()
-    
+
     cache2 = Cache(GIT_DIR)
     cache2.initial()
-    
+
     for path in cache2.list():
         if not cache1.contains(path):
             cache1.update(path)
