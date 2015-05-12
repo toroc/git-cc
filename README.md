@@ -1,3 +1,7 @@
+This is a fork of [charleso/git-cc](https://github.com/charleso/git-cc) with some merged commits from [whyrusleeping/git-cc](https://github.com/whyrusleeping/git-cc) fork and other improvements and fixes.
+
+---
+
 # git-cc
 
 Simple bridge between base Clearcase or UCM and Git.
