@@ -143,7 +143,15 @@ class ITransaction(object):
             try:
                 cc_exec(['ci', '-c', comment, file])
             except:
-                cc_exec(['unco', '-rm', file])
+                try:
+                    # try to change file type to compressed_file and checkin again
+                    cc_exec(['chtype', '-force', 'compressed_file', file])
+                    try:
+                        cc_exec(['ci', '-c', comment, file])
+                    except:
+                        cc_exec(['unco', '-rm', file])
+                except:
+                    cc_exec(['unco', '-rm', file])
 
 class Transaction(ITransaction):
     def __init__(self, comment):
