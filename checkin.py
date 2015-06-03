@@ -165,18 +165,18 @@ class Transaction(ITransaction):
         gitid = getBlob(self.base, file)
         if ccid != gitid:
             if not IGNORE_CONFLICTS:
-                if not areFilesEqualExceptForEOLs(ccFilename, gitFilename):
+                if not areFilesEqualExceptForEOLs(ccFilename, gitFilename, self.base):
                     raise Exception('File has been modified: %s. Try rebasing.' % file)
                 else:
                     print ('WARNING: Files differ only by EOLs',file,'...continuing...')
             else:
                 print ('WARNING: Detected possible conflict with',file,'...ignoring...')
 
-def areFilesEqualExceptForEOLs(fileA, fileB):
+def areFilesEqualExceptForEOLs(fileA, fileB, fileBbase):
     fileAContents = open(fileA, "rb").read()
     fileAContents = fileAContents.replace("\r\n", "\n")
-
-    fileBContents = open(fileB, "rb").read()
+    arg1 = '%s:%s' % (fileBbase, fileB)
+    fileBContents = git_exec(['show', arg1])
     fileBContents = fileBContents.replace("\r\n", "\n")
 
     return fileAContents == fileBContents
