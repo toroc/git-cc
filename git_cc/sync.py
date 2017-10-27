@@ -1,11 +1,11 @@
 """Copy files from Clearcase to Git manually"""
 
 import filecmp
-import os.path
 import shutil
 import stat
 import subprocess
-
+import os
+from os.path import join, abspath, isdir, exists
 from fnmatch import fnmatch
 
 from .cache import Cache
@@ -37,9 +37,9 @@ class SyncFile(object):
         same last access time and last modification time as the source file.
 
         """
-        src_file = os.path.join(src_dir, file_name)
-        dst_file = os.path.join(dst_dir, file_name)
-        copy_file = not os.path.exists(dst_file) or \
+        src_file = join(src_dir, file_name)
+        dst_file = join(dst_dir, file_name)
+        copy_file = not exists(dst_file) or \
             not filecmp.cmp(src_file, dst_file, shallow=False)
         if copy_file:
             debug('Copying to %s' % dst_file)
@@ -62,9 +62,9 @@ class Sync(object):
     """Implements the copying of multiple directory trees."""
 
     def __init__(self, src_root, src_dirs, dst_root, sync_file=SyncFile()):
-        self.src_root = os.path.abspath(src_root)
+        self.src_root = abspath(src_root)
         self.src_dirs = src_dirs
-        self.dst_root = os.path.abspath(dst_root)
+        self.dst_root = abspath(dst_root)
 
         self.sync_file = sync_file
 
@@ -72,7 +72,7 @@ class Sync(object):
         copied_file_count = 0
         for rel_dir, file_names in self.iter_src_files():
             for file_name in file_names:
-                file_path = os.path.join(rel_dir, file_name)
+                file_path = join(rel_dir, file_name)
                 if self.sync_file.do_sync(file_path,
                                           self.src_root,
                                           self.dst_root):
@@ -81,7 +81,7 @@ class Sync(object):
 
     def iter_src_files(self):
         for src_dir in self.src_dirs:
-            root_dir = os.path.join(self.src_root, src_dir)
+            root_dir = join(self.src_root, src_dir)
             root_dir_length = len(root_dir)
             for abs_dir, _, file_names in os.walk(root_dir):
                 rel_dir = abs_dir[root_dir_length + 1:]
@@ -96,7 +96,7 @@ class ClearCaseSync(Sync):
         private_files = self.collect_private_files()
 
         def under_vc(rel_dir, file_name):
-            path = os.path.join(self.src_root, rel_dir, file_name)
+            path = join(self.src_root, rel_dir, file_name)
             return path not in private_files
 
         iter_src_files = super(ClearCaseSync, self).iter_src_files
@@ -155,6 +155,14 @@ def output_as_set(command):
     p.stdout.close()
     return result
 
+def copy(file):
+    debug('GitDir = %s' % GIT_DIR)
+    newFile = join(GIT_DIR, file)
+    debug('Source: %s' % file)
+    debug('Copying to %s' % newFile)
+    mkdirs(newFile)
+    shutil.copy(join(CC_DIR, file), newFile)
+    os.chmod(newFile, stat.S_IREAD | stat.S_IWRITE)
 
 def syncCache():
     cache1 = Cache(GIT_DIR)
@@ -167,7 +175,7 @@ def syncCache():
     for path in cache2.list():
         if not cache1.contains(path):
             cache1.update(path)
-            if not os.path.isdir(os.path.join(CC_DIR, path.file)):
+            if not isdir(join(CC_DIR, path.file)):
                 if copy(path.file):
                     copied_file_count += 1
     cache1.write()
