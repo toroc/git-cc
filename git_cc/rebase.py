@@ -2,6 +2,7 @@
 
 from os.path import join, dirname, exists, isdir
 import os, stat
+import time
 from .common import *
 from datetime import datetime, timedelta
 from fnmatch import fnmatch
@@ -36,11 +37,11 @@ def main(stash=False, dry_run=False, lshistory=False, load=None):
     since = getSince()
     cache.start()
     if load:
-        history = open(load, 'r').read().decode(ENCODING)
+        history = open(load, 'r').read()
     else:
         cc.rebase()
         history = getHistory(since)
-        write(join(GIT_DIR, '.git', 'lshistory.bak'), history.encode(ENCODING))
+        write(join(GIT_DIR, '.git', 'lshistory.bak'), history)
     if lshistory:
         print(history)
     else:
@@ -54,15 +55,31 @@ def main(stash=False, dry_run=False, lshistory=False, load=None):
         doStash(lambda: doCommit(cs), stash)
 
 def checkPristine():
-    if(len(git_exec(['ls-files', '--modified']).splitlines()) > 0):
+    if not isPristine():
         fail('There are uncommitted files in your git directory')
 
+def isPristine():
+    files = git_exec(['ls-files', '--modified'])
+    if(len(files.splitlines()) > 0):
+        return False
+    else:
+        return True
+
+def printStatus():
+    files = git_exec(['status'])
+    print('Status:\n' + files)
+    files = git_exec(['ls-files', '--modified'])
+    print('Unstaged files:\n' + files)
+
 def doCommit(cs):
+    doCommitExperimental(cs)
+
+def doCommitOrig(cs):
     branch = getCurrentBranch()
     if branch:
         git_exec(['checkout', CC_TAG])
     try:
-        commit(cs)
+        commit(cs, branch)
     finally:
         if branch:
             git_exec(['rebase', CI_TAG, CC_TAG])
@@ -70,6 +87,9 @@ def doCommit(cs):
         else:
             git_exec(['branch', '-f', CC_TAG])
         tag(CI_TAG, CC_TAG)
+
+def doCommitExperimental(cs):
+    commit(cs, getCurrentBranch())
 
 def getSince():
     try:
@@ -143,9 +163,74 @@ def mergeHistory(changesets):
         group.fixComment()
     return groups
 
-def commit(list):
-    for cs in list:
-        cs.commit()
+# iterates through a set of changesets and commits each to git
+def commit(csList, branch):
+    print("Starting Commit")
+    for cs in csList:
+        csInfo = cs.subject + ' (' + cs.user + '/' + cs.date + ')'
+        print('Processing changeset "' + csInfo + '" from clearcase')
+
+
+
+
+        print('Building up changes on ' + CC_TAG)
+        if branch:
+            print('Creating a save point tag in case something bad happens')
+            tag(REBASE_BACKUP_TAG, CC_TAG)
+            git_exec(['checkout', CC_TAG])
+
+        try:
+            print("Committing")
+            try:
+                cs.commit()
+                print("Commit Complete")
+            except Exception as e:
+                logException(e)
+                raise
+
+            if branch:
+                try:
+                    print('Rebasing changes on ' + CC_TAG + ' to ' + CI_TAG)
+                    git_exec(['rebase', CI_TAG, CC_TAG])
+
+                    print('Rebasing changes on ' + branch + ' to ' + CC_TAG)
+                    git_exec(['rebase', CC_TAG, branch])
+                except Exception as e:
+                    logException(e)
+                    raise
+            else:
+                git_exec(['branch', '-f', CC_TAG])
+
+            # move checkin tag forward to clearcase tag
+            print('Updating ' + CI_TAG + ' to ' + CC_TAG)
+            tag(CI_TAG, CC_TAG)
+
+            #blindly eat this exception because:
+            #when this tag doesnt exist, its because we are creating a new repository
+            #and if anything fails during that, theres nothing to revert to, so we
+            #arent worried about not having that tag
+            try:
+                rmtag(REBASE_BACKUP_TAG)
+            except:
+                pass
+
+        except:
+            print('failed to rebase: ' + csInfo)
+            print('Resetting back to save point tag')
+
+            #see above
+            try:
+                reset(REBASE_BACKUP_TAG)
+                rmtag(REBASE_BACKUP_TAG)
+            except:
+                pass
+
+            if branch:
+                git_exec(['checkout', branch])
+            raise
+
+def logException(e):
+    print('\nAn EXCEPTION occured:\n{0}\n'.format(e))
 
 def printGroups(groups):
     for cs in groups:
@@ -191,7 +276,10 @@ class Group:
         env['GIT_AUTHOR_EMAIL'] = env['GIT_COMMITTER_EMAIL'] = str(getUserEmail(user))
         comment = self.comment if self.comment.strip() != "" else "<empty message>"
         try:
-            git_exec(['commit', '-m', comment.encode(ENCODING)], env=env)
+            if isPristine():
+                git_exec(['commit', '-m', comment], env=env)
+            else:
+                raise Exception('There are uncommitted files, something went wrong.')
         except Exception as e:
             if search('nothing( added)? to commit', e.args[0]) == None:
                 raise
@@ -228,6 +316,24 @@ class Changeset(object):
         else:
             os.chmod(toFile, os.stat(toFile).st_mode | stat.S_IWRITE)
         git_exec(['add', '-f', file], errors=False)
+
+        maxRetries = 10
+        retries = maxRetries
+        while not isPristine() and retries > 0:
+            printStatus()
+            time.sleep(1)
+            try:
+                #git_exec(['add', '-f', file], errors=False)
+                git_exec(['add', '-A'], errors=False)
+            except:
+                print('failed to add '+file)
+
+            retries -= 1
+            if retries == 0:
+                raw_input("Last retry, do you want to intervene before I fail?")
+
+        if not isPristine() and retries == 0:
+            raise Exception('Cannot add ' + file + ' after ' + str(maxRetries) + ' tries')
 
 class Uncataloged(Changeset):
     def add(self, files):

@@ -7,6 +7,7 @@ class Status:
     def setFile(self, file):
         self.file = file
     def cat(self):
+        #grabs the file from git, and then writes it into clearcase
         blob = git_exec(['cat-file', 'blob', getBlob(self.id, self.file)], decode=False)
         write(join(CC_DIR, self.file), blob)
     def stageDirs(self, t):
@@ -37,8 +38,13 @@ class Add(Status):
         self.stageDirs(t)
     def commit(self, t):
         self.commitDirs(t)
-        self.cat()
-        cc_exec(['mkelem', '-nc', self.file])
+        if exists(join(CC_DIR, self.file)):
+            #this will only occur in the case of a checkin -force
+            cc_exec(['co', '-reserved', '-nc', self.file])
+            self.cat()
+        else:
+            self.cat()
+            cc_exec(['mkelem', '-nc', self.file])
         if t.cc_label:
             cc_exec(['mklabel', '-nc', t.cc_label, self.file])
         t.add(self.file)
@@ -48,7 +54,16 @@ class Delete(Status):
         t.stageDir(dirname(self.file))
     def commit(self, t):
         # TODO Empty dirs?!?
-        cc_exec(['rm', self.file])
+
+        # if it doen't exist then silently ignore
+        path = join(CC_DIR, self.file)
+        print('Trying to delete ' + path)
+        if exists(path) and os.path.basename(path) in os.listdir(os.path.dirname(path)):
+            try:
+                cc_exec(['rm', self.file])
+            except:
+                # FIXME: This seems to happen when there are casing problems
+                print('WARNING: Could not find ' + join(CC_DIR, self.file))
 
 class Rename(Status):
     def __init__(self, files):

@@ -3,18 +3,10 @@ import inspect
 import sys
 
 from optparse import OptionParser
-
-from . import checkin
-from . import init
-from . import rebase
-from . import reset
-from . import sync
-from . import tag
-from . import update
-from . import version
+from . import rebase, checkin, init, sync, reset, tag, update, rerebase
 
 commands = [
-    init, rebase, checkin, sync, reset, tag, update, version
+    init, rebase, checkin, sync, reset, tag, update, rerebase, version
 ]
 
 

@@ -65,7 +65,22 @@ def getStatuses(id, initial):
     while len(split) > 1:
         char = split.pop(0)[0] # first char
         args = [split.pop(0)]
-        # check if file is really a symlink
+
+        # We dont handle ClearCase SymLinks very well right now
+        symcheck = ['ls', '-long', args[0]]
+        try:
+            ret = cc_exec(symcheck, errors=True)
+            cctype = ret.split(' ')[0]
+            if cctype == 'symbolic':
+                # ignore, because if two or more files are pointing to the symlink
+                # and they are both changed, then we might lose some changes
+                print('Ignoring ClearCase SymLink')
+                continue
+        except:
+            pass
+
+
+        # check if file is really a symlink  (git side)
         cmd = ['ls-tree', '-z', id, '--', args[0]]
         if git_exec(cmd).split(' ')[0] == '120000':
             char = 'S'
@@ -76,6 +91,8 @@ def getStatuses(id, initial):
             args = [split.pop(0)]
         if args[0] == cache.FILE:
             continue
+        print('char=' + char + ' filename=' + args[0])
+        print(args)
         type = types[char](args)
         type.id = id
         list.append(type)
@@ -90,10 +107,10 @@ def checkout(stats, comment, initial):
         except:
             transaction.rollback()
             raise
-
     for stat in stats:
-         stat.commit(transaction)
-    transaction.commit(comment);
+        print(stat)
+        stat.commit(transaction)
+    transaction.commit(comment)
 
 class ITransaction(object):
     def __init__(self, comment):
@@ -114,12 +131,28 @@ class ITransaction(object):
     def stage(self, file):
         self.co(file)
     def rollback(self):
+        print('Rolling back transation')
         for file in self.checkedout:
             cc_exec(['unco', '-rm', file])
         cc.rmactivity()
     def commit(self, comment):
+        print('Committing transaction')
         for file in self.checkedout:
-            cc_exec(['ci', '-identical', '-c', comment, file])
+            #cc_exec(['ci', '-identical', '-c', comment, file])
+            # try and check it in, if they are identical then skip
+            # TODO: it would be better to parse the output to confirm that the exception is due to identical checkins
+            try:
+                cc_exec(['ci', '-c', comment, file])
+            except:
+                try:
+                    # try to change file type to compressed_file and checkin again
+                    cc_exec(['chtype', '-force', 'compressed_file', file])
+                    try:
+                        cc_exec(['ci', '-c', comment, file])
+                    except:
+                        cc_exec(['unco', '-rm', file])
+                except:
+                    cc_exec(['unco', '-rm', file])
 
 class Transaction(ITransaction):
     def __init__(self, comment):
@@ -127,10 +160,24 @@ class Transaction(ITransaction):
         self.base = git_exec(['merge-base', CI_TAG, 'HEAD']).strip()
     def stage(self, file):
         super(Transaction, self).stage(file)
-        ccid = git_exec(['hash-object', join(CC_DIR, file)])[0:-1]
+        ccFilename = join(CC_DIR, file).replace("\\", "/")
+        gitFilename = file
+        ccid = git_exec(['hash-object', ccFilename])[0:-1]
         gitid = getBlob(self.base, file)
         if ccid != gitid:
             if not IGNORE_CONFLICTS:
-                raise Exception('File has been modified: %s. Try rebasing.' % file)
+                if not areFilesEqualExceptForEOLs(ccFilename, gitFilename, self.base):
+                    raise Exception('File has been modified: %s. Try rebasing.' % file)
+                else:
+                    print ('WARNING: Files differ only by EOLs',file,'...continuing...')
             else:
-                print ('WARNING: Detected possible confilct with',file,'...ignoring...')
+                print ('WARNING: Detected possible conflict with',file,'...ignoring...')
+
+def areFilesEqualExceptForEOLs(fileA, fileB, fileBbase):
+    fileAContents = open(fileA, "rb").read()
+    fileAContents = fileAContents.replace("\r\n", "\n")
+    arg1 = '%s:%s' % (fileBbase, fileB)
+    fileBContents = git_exec(['show', arg1])
+    fileBContents = fileBContents.replace("\r\n", "\n")
+
+    return fileAContents == fileBContents

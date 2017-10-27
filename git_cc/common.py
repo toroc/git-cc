@@ -77,7 +77,7 @@ def git_exec(cmd, **args):
     return popen('git', cmd, GIT_DIR, encoding='UTF-8', **args)
 
 def cc_exec(cmd, **args):
-    return popen('cleartool', cmd, CC_DIR, **args)
+    return popen('cleartool', cmd, CC_DIR, None, False, **args)
 
 def popen(exe, cmd, cwd, env=None, decode=True, errors=True, encoding=None):
     cmd.insert(0, exe)
@@ -101,6 +101,9 @@ def decodeString(encoding, encodestr):
 
 def tag(tag, id="HEAD"):
     git_exec(['tag', '-f', tag, id])
+
+def rmtag(tag):
+    git_exec(['tag', '-d', tag])
 
 def reset(tag=None):
     git_exec(['reset', '--hard', tag or CC_TAG])
@@ -210,7 +213,11 @@ def removeFile(file):
 
 def validateCC():
     if not CC_DIR:
-        fail("No 'clearcase' variable found for branch '%s'" % CURRENT_BRANCH)
+        fail("No 'clearcase' variable found for branch '%s'." % CURRENT_BRANCH)
+    if not os.path.isdir(CC_DIR):
+        fail("Clearcase view path '%s' is invalid. Is the view started?" % CC_DIR)
+    if not os.path.exists(CC_DIR):
+        fail("Cannot find the ClearCase view at '%s'." % CC_DIR)
 
 def path(path, args='-m'):
     if IS_CYGWIN:
@@ -224,8 +231,10 @@ if not exists(join(GIT_DIR, '.git')):
 CURRENT_BRANCH = getCurrentBranch() or 'master'
 cfg = GitConfigParser(CURRENT_BRANCH)
 cfg.read()
-CC_DIR = path(cfg.get(CFG_CC))
+if cfg.get(CFG_CC) is not None:
+    CC_DIR = path(cfg.get(CFG_CC).replace("\\", "/"))
 DEBUG = cfg.getCore('debug', True)
 CC_TAG = CURRENT_BRANCH + '_cc'
 CI_TAG = CURRENT_BRANCH + '_ci'
 users = get_users_module(cfg.getUsersModulePath())
+REBASE_BACKUP_TAG = CURRENT_BRANCH + '_backup'
