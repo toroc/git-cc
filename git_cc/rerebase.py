@@ -2,8 +2,8 @@
    Ususally used after gitcc checkin to avoid duplication of commits: with real data and with changes in ".gitcc".
 """
 
-from common import *
-import rebase
+from .common import *
+from . import rebase
 
 def main():
     reset()

@@ -54,7 +54,6 @@ class Delete(Status):
         t.stageDir(dirname(self.file))
     def commit(self, t):
         # TODO Empty dirs?!?
-
         # if it doen't exist then silently ignore
         path = join(CC_DIR, self.file)
         print('Trying to delete ' + path)

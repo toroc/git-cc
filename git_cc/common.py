@@ -43,7 +43,6 @@ def get_users_module(path):
     if os.path.exists(path):
         users_module_path = os.path.join(path)
         users_module = imp.load_source("users", users_module_path)
-
     return users_module
 
 CFG_CC = 'clearcase'

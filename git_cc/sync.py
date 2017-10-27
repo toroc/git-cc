@@ -65,7 +65,6 @@ class Sync(object):
         self.src_root = abspath(src_root)
         self.src_dirs = src_dirs
         self.dst_root = abspath(dst_root)
-
         self.sync_file = sync_file
 
     def do_sync(self):
@@ -92,7 +91,6 @@ class ClearCaseSync(Sync):
     """Implements the copying of multiple directory trees under ClearCase."""
 
     def iter_src_files(self):
-
         private_files = self.collect_private_files()
 
         def under_vc(rel_dir, file_name):
@@ -120,18 +118,15 @@ def main(cache=False, dry_run=False):
     validateCC()
     if cache:
         return syncCache()
-
     src_root = CC_DIR
     src_dirs = cfg.getInclude()
     dst_root = GIT_DIR
     sync_file = SyncFile() if not dry_run else IgnoreFile()
-
     # determine whether we should sync all files or only the files that are
     # under ClearCase control
     syncClass = Sync
     if cfg.ignorePrivateFiles():
         syncClass = ClearCaseSync
-
     return syncClass(src_root, src_dirs, dst_root, sync_file).do_sync()
 
 
@@ -167,10 +162,8 @@ def copy(file):
 def syncCache():
     cache1 = Cache(GIT_DIR)
     cache1.start()
-
     cache2 = Cache(GIT_DIR)
     cache2.initial()
-
     copied_file_count = 0
     for path in cache2.list():
         if not cache1.contains(path):
