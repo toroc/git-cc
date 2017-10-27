@@ -65,7 +65,6 @@ def getStatuses(id, initial):
     while len(split) > 1:
         char = split.pop(0)[0] # first char
         args = [split.pop(0)]
-
         # We dont handle ClearCase SymLinks very well right now
         symcheck = ['ls', '-long', args[0]]
         try:
@@ -78,8 +77,6 @@ def getStatuses(id, initial):
                 continue
         except:
             pass
-
-
         # check if file is really a symlink  (git side)
         cmd = ['ls-tree', '-z', id, '--', args[0]]
         if git_exec(cmd).split(' ')[0] == '120000':
@@ -179,5 +176,4 @@ def areFilesEqualExceptForEOLs(fileA, fileB, fileBbase):
     arg1 = '%s:%s' % (fileBbase, fileB)
     fileBContents = git_exec(['show', arg1])
     fileBContents = fileBContents.replace("\r\n", "\n")
-
     return fileAContents == fileBContents

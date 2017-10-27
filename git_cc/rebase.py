@@ -31,9 +31,7 @@ def main(stash=False, dry_run=False, lshistory=False, load=None):
     validateCC()
     if not (stash or dry_run or lshistory):
         checkPristine()
-
     cc_exec(["update"], errors=False)
-
     since = getSince()
     cache.start()
     if load:
@@ -169,16 +167,11 @@ def commit(csList, branch):
     for cs in csList:
         csInfo = cs.subject + ' (' + cs.user + '/' + cs.date + ')'
         print('Processing changeset "' + csInfo + '" from clearcase')
-
-
-
-
         print('Building up changes on ' + CC_TAG)
         if branch:
             print('Creating a save point tag in case something bad happens')
             tag(REBASE_BACKUP_TAG, CC_TAG)
             git_exec(['checkout', CC_TAG])
-
         try:
             print("Committing")
             try:
@@ -187,12 +180,10 @@ def commit(csList, branch):
             except Exception as e:
                 logException(e)
                 raise
-
             if branch:
                 try:
                     print('Rebasing changes on ' + CC_TAG + ' to ' + CI_TAG)
                     git_exec(['rebase', CI_TAG, CC_TAG])
-
                     print('Rebasing changes on ' + branch + ' to ' + CC_TAG)
                     git_exec(['rebase', CC_TAG, branch])
                 except Exception as e:
@@ -200,11 +191,9 @@ def commit(csList, branch):
                     raise
             else:
                 git_exec(['branch', '-f', CC_TAG])
-
             # move checkin tag forward to clearcase tag
             print('Updating ' + CI_TAG + ' to ' + CC_TAG)
             tag(CI_TAG, CC_TAG)
-
             #blindly eat this exception because:
             #when this tag doesnt exist, its because we are creating a new repository
             #and if anything fails during that, theres nothing to revert to, so we
@@ -213,18 +202,15 @@ def commit(csList, branch):
                 rmtag(REBASE_BACKUP_TAG)
             except:
                 pass
-
         except:
             print('failed to rebase: ' + csInfo)
             print('Resetting back to save point tag')
-
             #see above
             try:
                 reset(REBASE_BACKUP_TAG)
                 rmtag(REBASE_BACKUP_TAG)
             except:
                 pass
-
             if branch:
                 git_exec(['checkout', branch])
             raise
@@ -318,7 +304,6 @@ class Changeset(object):
         else:
             os.chmod(toFile, os.stat(toFile).st_mode | stat.S_IWRITE)
         git_exec(['add', '-f', file], errors=False)
-
         maxRetries = 10
         retries = maxRetries
         while not isPristine() and retries > 0:
@@ -329,11 +314,9 @@ class Changeset(object):
                 git_exec(['add', '-A'], errors=False)
             except:
                 print('failed to add '+file)
-
             retries -= 1
             if retries == 0:
                 raw_input("Last retry, do you want to intervene before I fail?")
-
         if not isPristine() and retries == 0:
             raise Exception('Cannot add ' + file + ' after ' + str(maxRetries) + ' tries')
 
@@ -360,10 +343,8 @@ class Uncataloged(Changeset):
                     continue
                 history = filter(None, history.split('\n'))
                 all_versions = self.parse_history(history)
-
                 date = cc_exec(['describe', '-fmt', '%Nd', dir])
                 actual_versions = self.filter_versions(all_versions, lambda x: x[1] < date)
-
                 versions = self.checkin_versions(actual_versions)
                 if not versions:
                     print("It appears that you may be missing a branch in the includes section of your gitcc config for file '%s'." % added)
