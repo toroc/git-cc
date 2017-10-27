@@ -8,3 +8,8 @@
 build/
 dist/
 git_cc.egg-info/
+*.bak
+*.dotCover
+*.ReSharper.user
+*.orig
+*.suo

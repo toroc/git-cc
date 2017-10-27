@@ -1,3 +1,7 @@
+This is a fork of [charleso/git-cc](https://github.com/charleso/git-cc) with some merged commits from [whyrusleeping/git-cc](https://github.com/whyrusleeping/git-cc) fork and other improvements and fixes.
+
+---
+
 # git-cc
 
 Simple bridge between base ClearCase or UCM and Git.
@@ -38,7 +42,7 @@ with the latest version from the GitHub repo. Unzip it and use pip to execute
 the following command in the root of the directory tree:
 
     C:\master> pip install .
-    
+
 Finally, if you cannot use pip, you can also use the old-skool approach to
 install Python packages:
 
@@ -121,7 +125,7 @@ like this:
         'charleso': "Charles O'Farrell",\
         'jki': 'Jan Kiszka <jan.kiszka@web.de>',\
     }
-     
+
     mailSuffix = 'example.com'
 
 You specify the path to the users module as the value of key
@@ -156,25 +160,25 @@ I don't know if this will cause any major dramas or not.
 
 1. WindowsError: [Error 2] The system cannot find the file specified
 
-You're most likely running gitcc under Windows Cmd. At moment this isn't
-supported. Instead use Git Bash, which is a better console anyway. :-)
+    You're most likely running gitcc under Windows Cmd. At moment this isn't
+    supported. Instead use Git Bash, which is a better console anyway. :-)
 
-If you have both msysgit and Cygwin installed then it may also be
-[this](https://github.com/charleso/git-cc/issues/10) problem.
+    If you have both msysgit and Cygwin installed then it may also be
+    [this](https://github.com/charleso/git-cc/issues/10) problem.
 
 2. cleartool: Error: Not an object in a vob: ".".
 
-The ClearCase directory you've specified in init isn't correct. Please note
-that the directory must be inside a VOB, which might be one of the folders
-inside the view you've specified.
+    The Clearcase directory you've specified in init isn't correct. Please note
+    that the directory must be inside a VOB, which might be one of the folders
+    inside the view you've specified.
 
 3. fatal: ambiguous argument 'ClearCase': unknown revision or path not in the working tree.
 
-If this is your first rebase then please ignore this. This is expected.
+    If this is your first rebase then please ignore this. This is expected.
 
 4. pathspec 'master_cc' did not match any file(s) known to git
 
-See Issue [8](https://github.com/charleso/git-cc/issues/8).
+    See Issue [8](https://github.com/charleso/git-cc/issues/8).
 
 ## Behind the scenes
 
@@ -230,7 +234,7 @@ This will result in output such as this:
     ........
     ----------------------------------------------------------------------
     Ran 8 tests in 0.002s
-     
+
     OK
 
 If you run the unit tests from the root of the repo, all unit tests will be
@@ -257,7 +261,7 @@ If you execute tox from the root of the repo, its output will look like this:
     ........
     ----------------------------------------------------------------------
     Ran 8 tests in 0.003s
-     
+
     OK
     py34 inst-nodeps: /home/a-user/repos/github.com/git-cc/.tox/dist/git_cc-1.0.0.dev0.zip
     py34 installed: git-cc==1.0.0.dev0
@@ -266,7 +270,7 @@ If you execute tox from the root of the repo, its output will look like this:
     ........
     ----------------------------------------------------------------------
     Ran 8 tests in 0.002s
-     
+
     OK
 
 As the output shows, tox runs the tests in virtualenvs for Python 2.7 and
@@ -298,18 +302,18 @@ like this - note that the actual CHANGES file for git-cc looks different:
 
     1.2.0 (unreleased)
     ------------------
-    
+
     - Fixes issue Z
 
     1.1.0 (2016-02-03)
     ------------------
-    
+
     - Adds support for feature Y
     - Updates documentation of feature X
 
     1.0.0 (2016-01-03)
     ------------------
-     
+
     - Started versioning at 1.0.0
 
 The file mentions that versions 1.0.0 and 1.1.0 have been released and that the
@@ -326,40 +330,40 @@ zest.releaser command 'fullrelease' with the example CHANGES file:
 
     # execute fullrelease on the command-line
     git-cc $ fullrelease
-    
-    # the command outputs the beginning of the CHANGES file 
+
+    # the command outputs the beginning of the CHANGES file
     Changelog entries for version 1.2.0:
-     
+
     1.2.0 (unreleased)
     ------------------
-     
+
     - Fixes issue Z
-     
+
     1.1.0 (2016-02-03)
     ------------------
     # the command proposes to set the release version to 1.2.0
     Enter version [1.2.0]:    
     # pressed RETURN to accept the proposed release version
     # the command automatically updates the CHANGES file and the version number used by setup.py
-    
+
     OK to commit this (Y/n)?
     # pressed RETURN to commit the changes
-    
+
     Tag needed to proceed, you can use the following command:
     git tag 1.2.0 -m "Tagging 1.2.0"
     Run this command (Y/n)?
     # pressed RETURN to tag the release
-    
+
     Check out the tag (for tweaks or pypi/distutils server upload) (Y/n)? n
     # answered 'n' and pressed RETURN to not check out the tag
-    
+
     Current version is 1.2.0
     # the command proposes to set the development version to 1.2.1dev0
-    Enter new development version ('.dev0' will be appended) [1.2.1]: 
+    Enter new development version ('.dev0' will be appended) [1.2.1]:
     # pressed RETURN to accept the proposed development version
     # the command automatically updates the CHANGES file and the version number used by setup.py
-    
-    OK to commit this (Y/n)? 
+
+    OK to commit this (Y/n)?
     # pressed RETURN to commit the changes
 
     OK to push commits to the server? (Y/n)? n
@@ -369,16 +373,16 @@ When the command is done, the beginning of the CHANGES file has changed to this:
 
     Changelog
     =========
-     
+
     1.2.1 (unreleased)
     ------------------
-     
+
     - Nothing changed yet.
-     
-     
+
+
     1.2.0 (2016-07-01)
     ------------------
-     
+
     - Fixes issue Z
 
 [pip-installation]: https://packaging.python.org/en/latest/installing/#requirements-for-installing-packages
