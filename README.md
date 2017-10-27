@@ -1,4 +1,5 @@
-This is a fork of [charleso/git-cc](https://github.com/charleso/git-cc) with some merged commits from [whyrusleeping/git-cc](https://github.com/whyrusleeping/git-cc) fork and other improvements and fixes.
+
+This is a fork of [charleso/git-cc](https://github.com/charleso/git-cc) with some merged commits from the following forks: [SaM-Solutions/git-cc](https://github.com/SaM-Solutions/git-cc) and [whyrusleeping/git-cc](https://github.com/whyrusleeping/git-cc). This fork also includes some additional fixes.
 
 ---
 
