@@ -275,6 +275,8 @@ class Group:
         env['GIT_AUTHOR_NAME'] = env['GIT_COMMITTER_NAME'] = getUserName(user)
         env['GIT_AUTHOR_EMAIL'] = env['GIT_COMMITTER_EMAIL'] = str(getUserEmail(user))
         comment = self.comment if self.comment.strip() != "" else "<empty message>"
+        # add cc2git token
+        comment += ' cc2git'
         try:
             if isPristine():
                 git_exec(['commit', '-m', comment], env=env)

@@ -3,7 +3,7 @@ import inspect
 import sys
 
 from optparse import OptionParser
-from . import rebase, checkin, init, sync, reset, tag, update, rerebase
+from . import rebase, checkin, init, sync, reset, tag, update, rerebase, version
 
 commands = [
     init, rebase, checkin, sync, reset, tag, update, rerebase, version
