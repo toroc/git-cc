@@ -1,8 +1,7 @@
 """Rebase from Clearcase"""
 
 from os.path import join, dirname, exists, isdir
-import os, stat
-import time
+import os, stat, time
 from .common import *
 from datetime import datetime, timedelta
 from fnmatch import fnmatch
@@ -269,8 +268,9 @@ class Group:
             else:
                 raise Exception('There are uncommitted files, something went wrong.')
         except Exception as e:
-            if search('nothing( added)? to commit', e.args[0]) == None:
-                raise
+            if isinstance(e.args[0], basestring):
+                if search('nothing( added)? to commit', e.args[0]) == None:
+                    raise
 
 def cc_file(file, version):
     return '%s@@%s' % (file, version)

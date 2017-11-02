@@ -31,7 +31,7 @@ The easiest way to install git-cc, is to use the Python package installer pip
 and install it directly from its GitHub repo. Execute the following command on
 the command prompt to install the latest version:
 
-    C:\> pip install git+git://github.com/charleso/git-cc.git#egg=git_cc
+    C:\> pip install git+git://github.com/toroc/git-cc.git#egg=git_cc
 
 If you installed Python from python.org, pip is included with Python 2 >= 2.7.9
 and Python 3 >= 3.4. If you do not have pip, [this section] [pip-installation]
@@ -54,7 +54,7 @@ install Python packages:
 Initialise:
 
     git init
-    gitcc init d:/view/xyz
+    gitcc init /q/carold_view/cc_vob
     gitcc rebase
     # Get coffee
     # Do some work
